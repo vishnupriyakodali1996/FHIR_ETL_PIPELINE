@@ -5,6 +5,8 @@ from pathlib import Path
 from src.registration import data_dir
 
 BASE_URL = "https://in-info-web20.luddy.indianapolis.iu.edu/apis/default/fhir"
+Base_hermes_url = "http://159.65.173.51:8080/v1/snomed/concepts"
+primary_care_EHR = "http://137.184.71.65:8080/fhir/Patient"
 
 
 def get_access_token_from_file():
@@ -49,48 +51,24 @@ def get_fhir_patient(resource_id):
     pprint(response.json())
     print('------------------------------------------------------------- 2')
 
-
-#Demonstrate using FHIR search parameters (e.g., name, birth date, gender, condition, _lastUpdated, etc.) to retrieve patient data from the OpenEMR FHIR server.
+# Search patient by name
 def search_patient_by_name(name_string):
     url = f'{BASE_URL}/Patient?name={name_string}'
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
-    pprint(response.json())
+    data= (response.json())
+    if 'entry' in data:
+        entry = data['entry']
+        for item in entry:
+            resource_id = item['resource']['id']
+            given_name = f"{item['resource']['name'][0]['given'][0]}"
+            family_name = f"{item['resource']['name'][0]['family']}"
+            print(f"Patient name: {given_name} {family_name}\n Resource ID: {resource_id}")
+    else:
+        print('No results found')
     print('------------------------------------------------------------- 3')
 
-
-#Search for all the conditions of this patient.
-def search_all_condition(patient_resource_id):
-    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
-    response = requests.get(url=url, headers=get_headers())
-    print(response.url)
-    data = response.json()
-    pprint(data)
-    print(f"Total num of conditions for patient: {len(data['entry'])}")
-    num = 0
-    for items in data['entry']:
-        for dicts in items.get('resource')['code']['coding']:
-            code = dicts.get('code')
-            condition = dicts.get('display')
-            num = num + 1
-            print(f"Condition ({num}) - code: {code} - condition: {condition}")
-    print('------------------------------------------------------------- 3')
-
-#get any one condition of this patient
-def search_one_condition(patient_resource_id):
-    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
-    response = requests.get(url=url, headers=get_headers())
-    print(response.url)
-    data = response.json()
-    for items in data['entry']:
-        for dicts in items.get('resource')['code']['coding']:
-            code = dicts.get('code')
-            condition = dicts.get('display')
-            print(f"First condition of patient - code: {code} - condition: {condition}")
-        break
-    print('------------------------------------------------------------- 3')
-
-
+# Search patient by name and gender
 def search_patient_by_name_gender(name_string, gender):
     url = f'{BASE_URL}/Patient?name={name_string}&gender={gender}'
     response = requests.get(url=url, headers=get_headers())
@@ -105,15 +83,61 @@ def search_patient_by_name_gender(name_string, gender):
             print(f"{resource_id} - {item['resource']['gender']} - {given_name} {family_name}")
     else:
         print('No results found')
-        print('------------------------------------------------------------- 5')
+        print('------------------------------------------------------------- 4')
 
+# Search patient by birthday
 def search_patient_by_bday(bday):
     url = f'{BASE_URL}/Patient?birthdate={bday}'
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
-    pprint(response.json())
+    data= (response.json())
+    print(f"Patient details with date of birth {bday}")
+    if 'entry' in data:
+        print(f"Number of entries: {len(data['entry'])}")
+        entry = data['entry']
+        for item in entry:
+            resource_id = item['resource']['id']
+            date_of_birth= item['resource']['birthDate']
+            given_name = f"{item['resource']['name'][0]['given'][0]}"
+            family_name = f"{item['resource']['name'][0]['family']}"
+            gender = f"{item['resource']['gender']}"
+            print(f" Name of patient: {given_name} {family_name}\nGender = {gender} \nResource ID {resource_id}\n{date_of_birth}")
+    else:
+        print('No results found')
+    print('------------------------------------------------------------- 5')
+
+# Search for all the conditions of this patient.
+def search_all_condition(patient_resource_id):
+    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    data = response.json()
+    pprint(data)
+    print(f"Total num of conditions for patient: {len(data['entry'])}")
+    num = 0
+    for items in data['entry']:
+        for dicts in items.get('resource')['code']['coding']:
+            code = dicts.get('code')
+            condition = dicts.get('display')
+            num = num + 1
+            print(f"Condition ({num}) - code: {code} - condition: {condition}")
     print('------------------------------------------------------------- 6')
 
+# Get any one condition of this patient
+def search_one_condition(patient_resource_id):
+    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    data = response.json()
+    for items in data['entry']:
+        for dicts in items.get('resource')['code']['coding']:
+            code = dicts.get('code')
+            condition = dicts.get('display')
+            print(f"First condition of patient - code: {code} - condition: {condition}")
+        break
+    print('------------------------------------------------------------- 7')
+
+# Get concept ID for the condition
 def get_concept_id(patient_resource_id):
     url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
     response = requests.get(url=url, headers=get_headers())
@@ -126,16 +150,50 @@ def get_concept_id(patient_resource_id):
     for coding in codings:
         code = coding.get('code')
         display = coding.get('display')
-        print(f"Concept ID: {code}, Condition: {display}")
-    print('------------------------------------------------------------- 3')
+        print(f"{code} is the concept ID for Condition: {display}")
+    print('------------------------------------------------------------- 8')
+
+# Get parent term for the condition
+BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
+def get_snomed (code):
+    # Construct the full URL
+    url = f'{BASE_HERMES_URL}/concepts/{code}/extended'
+    # Make the GET request
+    response = requests.get(url)
+    print(response.url)
+    data = response.json()
+    pprint(data)
+def get_parent_id(patient_resource_id):
+    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    data = response.json()
+    first_entry = data['entry'][0]
+    resource = first_entry.get('resource')
+    code_section = resource.get('code')
+    codings = code_section.get('coding')
+    for coding in codings:
+        code = coding.get('code')
+        display = coding.get('display')
+        print(f"{code} is the concept ID for Condition: {display}")
+        get_snomed(code)
+    print('------------------------------------------------------------- 8')
+
+# Create a patient resource in primary care EHR server
+
+# Create a condition using the parent concept on primary care EHR (preff term concept)
+
+# Validation of patient and condition resource
+
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
     #get_all_resources()
     #get_fhir_patient(resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
-    search_all_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
     #search_patient_by_name(name_string='Kuvalis')
+    #def search_patient_by_name_gender(name_string, gender)
     #search_patient_by_bday(bday= '1995-04-23')
+    #search_all_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
     #search_one_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
-    #snomed_concept_id = "80967001"
-    get_concept_id(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
+    #get_concept_id(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
+    get_parent_id(patient_resource_id= '985ac6ea-c3e8-4bd4-ae43-41683cb26135')
