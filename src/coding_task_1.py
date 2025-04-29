@@ -101,7 +101,7 @@ def search_patient_by_bday(bday):
             given_name = f"{item['resource']['name'][0]['given'][0]}"
             family_name = f"{item['resource']['name'][0]['family']}"
             gender = f"{item['resource']['gender']}"
-            print(f" Name of patient: {given_name} {family_name}\nGender = {gender} \nResource ID {resource_id}\n{date_of_birth}")
+            print(f"Name of patient:{given_name} {family_name}\nGender: {gender} \nResource ID: {resource_id}\nDate of birth:{date_of_birth}")
     else:
         print('No results found')
     print('------------------------------------------------------------- 5')
@@ -153,7 +153,7 @@ def get_concept_id(patient_resource_id):
         print(f"{code} is the concept ID for Condition: {display}")
     print('------------------------------------------------------------- 8')
 
-# Get parent term for the condition
+# Get parent term for the condition of the patient
 BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
 def get_snomed (code):
     # Construct the full URL
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     #get_all_resources()
     #get_fhir_patient(resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
     #search_patient_by_name(name_string='Kuvalis')
-    #def search_patient_by_name_gender(name_string, gender)
+    #search_patient_by_name_gender(name_string= 'Kuvalis', gender= "male")
     #search_patient_by_bday(bday= '1995-04-23')
     #search_all_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
     #search_one_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
