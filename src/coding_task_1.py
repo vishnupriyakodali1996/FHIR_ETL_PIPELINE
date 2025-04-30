@@ -112,7 +112,7 @@ def search_all_condition(patient_resource_id):
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     data = response.json()
-    pprint(data)
+    #pprint(data)
     print(f"Total num of conditions for patient: {len(data['entry'])}")
     num = 0
     for items in data['entry']:
@@ -129,12 +129,15 @@ def search_one_condition(patient_resource_id):
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     data = response.json()
-    for items in data['entry']:
-        for dicts in items.get('resource')['code']['coding']:
-            code = dicts.get('code')
-            condition = dicts.get('display')
-            print(f"First condition of patient - code: {code} - condition: {condition}")
-        break
+    # pprint(data)
+    nice_entry = data['entry'][16]
+    resource = nice_entry.get('resource')
+    code_section = resource.get('code')
+    codings = code_section.get('coding')
+    for coding in codings:
+        code = coding.get('code')
+        display = coding.get('display')
+        print(f"{code} is the concept ID for Condition: {display}")
     print('------------------------------------------------------------- 7')
 
 # Get concept ID for the condition
@@ -143,7 +146,7 @@ def get_concept_id(patient_resource_id):
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     data = response.json()
-    first_entry = data['entry'][0]
+    first_entry = data['entry'][16]
     resource = first_entry.get('resource')
     code_section = resource.get('code')
     codings = code_section.get('coding')
@@ -162,7 +165,7 @@ def get_snomed (code):
     response = requests.get(url)
     print(response.url)
     data = response.json()
-    pprint(data)
+    #pprint(data)
     # Get the first conceptId from the first item in the data list and assign it to 'parent_id'
     parent_id = data[0].get('conceptId')
     # Print the result
@@ -173,7 +176,7 @@ def get_parent_id(patient_resource_id):
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     data = response.json()
-    first_entry = data['entry'][0]
+    first_entry = data['entry'][16]
     resource = first_entry.get('resource')
     code_section = resource.get('code')
     codings = code_section.get('coding')
@@ -193,12 +196,12 @@ def get_parent_id(patient_resource_id):
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
-    #get_all_resources()
-    #get_fhir_patient(resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
-    #search_patient_by_name(name_string='Kuvalis')
-    #search_patient_by_name_gender(name_string= 'Kuvalis', gender= "male")
-    #search_patient_by_bday(bday= '1995-04-23')
-    #search_all_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
-    #search_one_condition(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
-    #get_concept_id(patient_resource_id='985ac6ea-c3e8-4bd4-ae43-41683cb26135')
-    get_parent_id(patient_resource_id= '985ac6ea-c3e8-4bd4-ae43-41683cb26135')
+    # get_all_resources()
+    # get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    search_patient_by_name(name_string='Bailey')
+    search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
+    search_patient_by_bday(bday= '1980-02-21')
+    # search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    search_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_parent_id(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
