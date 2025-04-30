@@ -51,6 +51,16 @@ def get_fhir_patient(resource_id):
     pprint(response.json())
     print('------------------------------------------------------------- 2')
 
+
+def create_json(resource_id):
+    url = f'{BASE_URL}/Patient/{resource_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    data=response.json()
+    with open(data_dir / "patient.json", "w") as f:
+        json.dump(data, f, indent=2)
+    print('------------------------------------------------------------- 2')
+
 # Search patient by name
 def search_patient_by_name(name_string):
     url = f'{BASE_URL}/Patient?name={name_string}'
@@ -183,7 +193,6 @@ def get_parent_id(patient_resource_id):
     for coding in codings:
         code = coding.get('code')
         display = coding.get('display')
-        print(f"{code} is the concept ID for Condition: {display}")
     get_snomed(code)
     print('------------------------------------------------------------- 9')
 
@@ -197,7 +206,8 @@ def get_parent_id(patient_resource_id):
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
     # get_all_resources()
-    # get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     search_patient_by_name(name_string='Bailey')
     search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
     search_patient_by_bday(bday= '1980-02-21')
