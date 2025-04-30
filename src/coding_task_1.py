@@ -157,12 +157,19 @@ def get_concept_id(patient_resource_id):
 BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
 def get_snomed (code):
     # Construct the full URL
-    url = f'{BASE_HERMES_URL}/concepts/{code}/extended'
+    url = f'{BASE_HERMES_URL}/search?constraint=>!{code}'
     # Make the GET request
     response = requests.get(url)
     print(response.url)
     data = response.json()
     pprint(data)
+    # Iterate over each item in the data list
+    for items in data:
+        # Get the 'conceptId' value from the dictionary
+        parent_id = items.get('conceptId')
+        # Print the result
+        print(f'The parent concept for condition is: {parent_id}')
+
 def get_parent_id(patient_resource_id):
     url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
     response = requests.get(url=url, headers=get_headers())
@@ -176,8 +183,8 @@ def get_parent_id(patient_resource_id):
         code = coding.get('code')
         display = coding.get('display')
         print(f"{code} is the concept ID for Condition: {display}")
-        get_snomed(code)
-    print('------------------------------------------------------------- 8')
+    get_snomed(code)
+    print('------------------------------------------------------------- 9')
 
 # Create a patient resource in primary care EHR server
 
