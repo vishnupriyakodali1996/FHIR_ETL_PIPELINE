@@ -163,12 +163,10 @@ def get_snomed (code):
     print(response.url)
     data = response.json()
     pprint(data)
-    # Iterate over each item in the data list
-    for items in data:
-        # Get the 'conceptId' value from the dictionary
-        parent_id = items.get('conceptId')
-        # Print the result
-        print(f'The parent concept for condition is: {parent_id}')
+    # Get the first conceptId from the first item in the data list and assign it to 'parent_id'
+    parent_id = data[0].get('conceptId')
+    # Print the result
+    print(f'The parent concept for condition is: {parent_id}')
 
 def get_parent_id(patient_resource_id):
     url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
