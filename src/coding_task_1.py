@@ -7,7 +7,7 @@ from src.registration import data_dir
 BASE_URL = "https://in-info-web20.luddy.indianapolis.iu.edu/apis/default/fhir"
 Base_hermes_url = "http://159.65.173.51:8080/v1/snomed/concepts"
 primary_care_EHR = "http://137.184.71.65:8080/fhir/Patient"
-
+FHIR_SERVER_URL = "http://137.184.71.65:8080/fhir"
 
 def get_access_token_from_file():
     file_path = Path(data_dir / "access_token.json")
@@ -51,15 +51,6 @@ def get_fhir_patient(resource_id):
     pprint(response.json())
     print('------------------------------------------------------------- 2')
 
-
-def create_json(resource_id):
-    url = f'{BASE_URL}/Patient/{resource_id}'
-    response = requests.get(url=url, headers=get_headers())
-    print(response.url)
-    data=response.json()
-    with open(data_dir / "patient.json", "w") as f:
-        json.dump(data, f, indent=2)
-    print('------------------------------------------------------------- 2')
 
 # Search patient by name
 def search_patient_by_name(name_string):
@@ -139,8 +130,9 @@ def search_one_condition(patient_resource_id):
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     data = response.json()
-    # pprint(data)
+    #pprint(data)
     nice_entry = data['entry'][16]
+    pprint(nice_entry)
     resource = nice_entry.get('resource')
     code_section = resource.get('code')
     codings = code_section.get('coding')
@@ -149,6 +141,8 @@ def search_one_condition(patient_resource_id):
         display = coding.get('display')
         print(f"{code} is the concept ID for Condition: {display}")
     print('------------------------------------------------------------- 7')
+
+
 
 # Get concept ID for the condition
 def get_concept_id(patient_resource_id):
@@ -168,50 +162,106 @@ def get_concept_id(patient_resource_id):
 
 # Get parent term for the condition of the patient
 BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
-def get_snomed (code):
-    # Construct the full URL
-    url = f'{BASE_HERMES_URL}/search?constraint=>!{code}'
-    # Make the GET request
-    response = requests.get(url)
-    print(response.url)
-    data = response.json()
-    #pprint(data)
-    # Get the first conceptId from the first item in the data list and assign it to 'parent_id'
-    parent_id = data[0].get('conceptId')
-    # Print the result
-    print(f'The parent concept for condition is: {parent_id}')
 
-def get_parent_id(patient_resource_id):
-    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
-    response = requests.get(url=url, headers=get_headers())
+
+def get_parent(patient_resource_id):
+    # Fetch condition from FHIR server
+    condition_url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
+    response = requests.get(url=condition_url, headers=get_headers())
     print(response.url)
-    data = response.json()
-    first_entry = data['entry'][16]
-    resource = first_entry.get('resource')
-    code_section = resource.get('code')
-    codings = code_section.get('coding')
-    for coding in codings:
-        code = coding.get('code')
-        display = coding.get('display')
-    get_snomed(code)
+
+    entry = response.json()['entry'][16]['resource']
+
+    # Extract SNOMED code
+    code = entry['code']['coding'][0]['code']
+    display = entry['code']['coding'][0]['display']
+    print(f'Condition code: {code}, display: {display}')
+
+    # Fetch SNOMED parent
+    snomed_url = f'{BASE_HERMES_URL}/search?constraint=>!{code}'
+    snomed_response = requests.get(snomed_url)
+    print(snomed_response.url)
+    parent_id = snomed_response.json()[0].get('conceptId')
+    print(f'The parent concept for condition is: {parent_id}')
     print('------------------------------------------------------------- 9')
 
-# Create a patient resource in primary care EHR server
+def create_patient_json(resource_id):
+    url = f'{BASE_URL}/Patient/{resource_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    data=response.json()
+    with open(data_dir / "patient.json", "w") as f:
+        json.dump(data, f, indent=2)
+    print('------------------------------------------------------------- 10')
 
-# Create a condition using the parent concept on primary care EHR (preff term concept)
+def create_condition_json(patient_resource_id):
+    # Get original condition
+    url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
+    response = requests.get(url=url, headers=get_headers())
+    data = response.json()
+    condition = data['entry'][16]['resource']
 
-# Validation of patient and condition resource
+    # Extract original SNOMED code
+    original_code = condition['code']['coding'][0]['code']
 
+    # Get parent SNOMED concept from Hermes
+    snomed_url = f'{BASE_HERMES_URL}/search?constraint=>!{original_code}'
+    snomed_response = requests.get(snomed_url)
+    snomed_data = snomed_response.json()
+    parent_concept_id = snomed_data[0]['conceptId']
+    parent_term = snomed_data[0]['term']
+
+    # Replace code and display
+    condition['code']['coding'][0]['code'] = str(parent_concept_id)
+    condition['code']['coding'][0]['display'] = parent_term
+    condition['code']['text'] = parent_term  # optional but helpful
+
+    # Save to new file
+    with open(data_dir / "parent_condition.json", "w") as f:
+        json.dump(condition, f, indent=2)
+
+def post_patient(file_name: str, resource_type: str):
+    with open(data_dir / f"{file_name}.json") as f:
+        resource = json.load(f)
+    response = requests.post(
+        f"{FHIR_SERVER_URL}/{resource_type}",
+        headers={"Content-Type": "application/fhir+json"},
+        json=resource
+    )
+    print(response.status_code)
+    patient_response=response.json()
+    print(json.dumps(patient_response, indent=2))
+    patient_id = patient_response["id"]
+    with open(data_dir / "patient_id.txt", "w") as f:
+        f.write(patient_id)
+
+def post_condition(file_name: str, resource_type: str):
+    with open(data_dir / f"{file_name}.json") as f:
+        resource = json.load(f)
+    with open(data_dir / "patient_id.txt", "r") as f:
+        patient_id = f.read().strip()
+    resource["subject"]["reference"] = f"Patient/{patient_id}"
+    response = requests.post(
+        f"{FHIR_SERVER_URL}/{resource_type}",
+        headers={"Content-Type": "application/fhir+json"},
+        json=resource
+    )
+    print(response.status_code)
+    print(json.dumps(response.json(), indent=2))
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
-    # get_all_resources()
+    get_all_resources()
     get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    create_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     search_patient_by_name(name_string='Bailey')
     search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
     search_patient_by_bday(bday= '1980-02-21')
-    # search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     search_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    get_parent_id(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    post_patient("patient", "Patient")
+    post_condition("parent_condition", "Condition")
+
