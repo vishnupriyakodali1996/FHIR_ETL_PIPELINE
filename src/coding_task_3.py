@@ -126,6 +126,7 @@ if __name__ == '__main__':
     print('-------------------------------------------------------------')
     check_observation_in_openemr(patient_resource_id)
     save_first_observation_to_file(patient_resource_id)
+
     # Load patient ID from file and update the observation
     new_patient_id = load_patient_id_from_file()
     first_observation["subject"] = {"reference": f"Patient/{new_patient_id}"}
