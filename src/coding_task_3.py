@@ -86,17 +86,37 @@ def save_first_observation_to_file(patient_resource_id):
     else:
         print("No observation found to save.")
 
+#read new patient ID from patient_id.txt
+def load_patient_id_from_file():
+    try:
+        with open(data_dir / "patient_id.txt", "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        print("Error: patient_id.txt not found.")
+        return None
+
+data_dir = Path("/Users/laurandoigo/PycharmProjects/GROUP_PROJECT/src/data") #replace with your path
+
 #Post the observation data to the Primary Care EHR FHIR server.
-def post_observation_to_primary_care_ehr(observation_data):
+def post_observation_to_primary_care_ehr(first_observation):
     url = f"{primary_care_EHR}/Observation"
     headers = get_headers()
     try:
-        response = requests.post(url=url, headers=headers, json=observation_data)
-        response.raise_for_status()
+        response = requests.post(url=url, headers=headers, json=first_observation)
+        response.raise_for_status()  # ✅ Only once
         print("Observation posted successfully to Primary Care EHR.")
-        pprint(response.json())
+        observation_response = response.json()
+        pprint(observation_response)
+
+        # Save observation ID
+        observation_id = observation_response["id"]
+        with open(data_dir / "observation_id.txt", "w") as f:
+            f.write(observation_id)
+        print(f"Observation ID saved to {data_dir / 'observation_id.txt'}")
+
     except requests.exceptions.RequestException as e:
         print(f"Error posting observation to Primary Care EHR: {e}")
+
 
 
 # Main execution
@@ -106,4 +126,9 @@ if __name__ == '__main__':
     print('-------------------------------------------------------------')
     check_observation_in_openemr(patient_resource_id)
     save_first_observation_to_file(patient_resource_id)
+    # Load patient ID from file and update the observation
+    new_patient_id = load_patient_id_from_file()
+    first_observation["subject"] = {"reference": f"Patient/{new_patient_id}"}
+
+    # Post the observation
     post_observation_to_primary_care_ehr(first_observation)
