@@ -86,9 +86,24 @@ def save_first_observation_to_file(patient_resource_id):
     else:
         print("No observation found to save.")
 
+#Post the observation data to the Primary Care EHR FHIR server.
+def post_observation_to_primary_care_ehr(observation_data):
+    url = f"{primary_care_EHR}/Observation"
+    headers = get_headers()
+    try:
+        response = requests.post(url=url, headers=headers, json=observation_data)
+        response.raise_for_status()
+        print("Observation posted successfully to Primary Care EHR.")
+        pprint(response.json())
+    except requests.exceptions.RequestException as e:
+        print(f"Error posting observation to Primary Care EHR: {e}")
+
+
 # Main execution
 if __name__ == '__main__':
     patient_resource_id = '985ac812-ddd2-49ce-9806-160e27d7cfa7'
+    first_observation = select_first_observation(patient_resource_id)
     print('-------------------------------------------------------------')
     check_observation_in_openemr(patient_resource_id)
     save_first_observation_to_file(patient_resource_id)
+    post_observation_to_primary_care_ehr(first_observation)
