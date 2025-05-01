@@ -125,21 +125,21 @@ def search_all_condition(patient_resource_id):
     print('------------------------------------------------------------- 6')
 
 # Get any one condition of this patient
-def search_one_condition(patient_resource_id):
+def get_one_condition(patient_resource_id):
     url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     data = response.json()
     #pprint(data)
     nice_entry = data['entry'][16]
-    pprint(nice_entry)
+    #pprint(nice_entry)
     resource = nice_entry.get('resource')
     code_section = resource.get('code')
     codings = code_section.get('coding')
     for coding in codings:
         code = coding.get('code')
         display = coding.get('display')
-        print(f"{code} is the concept ID for Condition: {display}")
+        print(f"Patient has Condition: {display}")
     print('------------------------------------------------------------- 7')
 
 
@@ -171,7 +171,6 @@ def get_parent(patient_resource_id):
     print(response.url)
 
     entry = response.json()['entry'][16]['resource']
-
     # Extract SNOMED code
     code = entry['code']['coding'][0]['code']
     display = entry['code']['coding'][0]['display']
@@ -181,6 +180,7 @@ def get_parent(patient_resource_id):
     snomed_url = f'{BASE_HERMES_URL}/search?constraint=>!{code}'
     snomed_response = requests.get(snomed_url)
     print(snomed_response.url)
+    pprint(snomed_response.json())
     parent_id = snomed_response.json()[0].get('conceptId')
     print(f'The parent concept for condition is: {parent_id}')
     print('------------------------------------------------------------- 9')
@@ -209,7 +209,7 @@ def create_condition_json(patient_resource_id):
     snomed_response = requests.get(snomed_url)
     snomed_data = snomed_response.json()
     parent_concept_id = snomed_data[0]['conceptId']
-    parent_term = snomed_data[0]['term']
+    parent_term = snomed_data[0]['preferredTerm']
 
     # Replace code and display
     condition['code']['coding'][0]['code'] = str(parent_concept_id)
@@ -248,20 +248,27 @@ def post_condition(file_name: str, resource_type: str):
     )
     print(response.status_code)
     print(json.dumps(response.json(), indent=2))
+    condition_resource = response.json()
+    condition_id = condition_resource["id"]
+    with open(data_dir / "condition_id.txt", "w") as f:
+        f.write(condition_id)
+
+
+
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
-    get_all_resources()
-    get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    search_patient_by_name(name_string='Bailey')
-    search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
-    search_patient_by_bday(bday= '1980-02-21')
-    search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    search_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    post_patient("patient", "Patient")
-    post_condition("parent_condition", "Condition")
+    #get_all_resources()
+    #get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #search_patient_by_name(name_string='Bailey')
+    #search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
+    #search_patient_by_bday(bday= '1980-02-21')
+    #search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #post_patient("patient", "Patient")
+   # post_condition("parent_condition", "Condition")
 
