@@ -2,7 +2,7 @@
   "id": "985ac83e-bf59-4bd8-80a9-a7a82fda81ee",
   "meta": {
     "versionId": "1",
-    "lastUpdated": "2025-05-01T09:16:23+00:00"
+    "lastUpdated": "2025-05-01T21:20:49+00:00"
   },
   "resourceType": "Condition",
   "clinicalStatus": {
@@ -39,10 +39,10 @@
       {
         "system": "http://snomed.info/sct",
         "code": "54398005",
-        "display": "Acute URI"
+        "display": "Acute upper respiratory infection"
       }
     ],
-    "text": "Acute URI"
+    "text": "Acute upper respiratory infection"
   },
   "subject": {
     "reference": "Patient/985ac812-ddd2-49ce-9806-160e27d7cfa7"

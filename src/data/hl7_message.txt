@@ -1,0 +1,1 @@
+MSH|^~\&|MyApp|SendingFacility|ReceivingApp|ReceivingFacility|20250430120000||ADT^A01|MSG00001|P|2.5PID|1||985ac812-ddd2-49ce-9806-160e27d7cfa7||Bailey^Trudie||19800221|F|||434 Cormier Passage Suite 70^Holyoke^Massachusetts^01040^^HPV1|1|IDG1|1||J02.8^ICD-10 Term^I10|Acute viral pharyngitis

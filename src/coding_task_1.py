@@ -200,6 +200,8 @@ def create_condition_json(patient_resource_id):
     response = requests.get(url=url, headers=get_headers())
     data = response.json()
     condition = data['entry'][16]['resource']
+    with open(data_dir / "condition.json", "w") as f:
+        json.dump(condition, f, indent=2)
 
     # Extract original SNOMED code
     original_code = condition['code']['coding'][0]['code']
@@ -258,17 +260,17 @@ def post_condition(file_name: str, resource_type: str):
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
-    #get_all_resources()
-    #get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #search_patient_by_name(name_string='Bailey')
-    #search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
-    #search_patient_by_bday(bday= '1980-02-21')
-    #search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_all_resources()
+    get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    search_patient_by_name(name_string='Bailey')
+    search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
+    search_patient_by_bday(bday= '1980-02-21')
+    search_all_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     post_patient("patient", "Patient")
     post_condition("parent_condition", "Condition")
 
