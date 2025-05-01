@@ -1,0 +1,26 @@
+{
+  "resourceType": "Procedure",
+  "status": "completed",
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "80146002",
+        "display": "Appendectomy (procedure)"
+      }
+    ],
+    "text": "Appendectomy"
+  },
+  "subject": {
+    "reference": "Patient/{patient_id}"
+  },
+  "performedDateTime": "2024-12-15T10:30:00Z",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/procedure-observation",
+      "valueReference": {
+        "reference": "Observation/{observation_id}"
+      }
+    }
+  ]
+}
