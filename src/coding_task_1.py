@@ -269,6 +269,6 @@ if __name__ == '__main__':
     #get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #post_patient("patient", "Patient")
-   # post_condition("parent_condition", "Condition")
+    post_patient("patient", "Patient")
+    post_condition("parent_condition", "Condition")
 

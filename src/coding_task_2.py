@@ -145,6 +145,24 @@ def create_child_condition_json(patient_resource_id):
     with open(data_dir / "child_condition.json", "w") as f:
         json.dump(condition, f, indent=2)
 
+def post_condition(file_name: str, resource_type: str):
+    with open(data_dir / f"{file_name}.json") as f:
+        resource = json.load(f)
+    with open(data_dir / "patient_id.txt", "r") as f:
+        patient_id = f.read().strip()
+    resource["subject"]["reference"] = f"Patient/{patient_id}"
+    response = requests.post(
+        f"{FHIR_SERVER_URL}/{resource_type}",
+        headers={"Content-Type": "application/fhir+json"},
+        json=resource
+    )
+    print(response.status_code)
+    print(json.dumps(response.json(), indent=2))
+    condition_resource = response.json()
+    condition_id = condition_resource["id"]
+    with open(data_dir / "child_condition_id.txt", "w") as f:
+        f.write(condition_id)
+
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
@@ -152,3 +170,4 @@ if __name__ == '__main__':
     #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_child(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
     create_child_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    post_condition("child_condition", "Condition")
