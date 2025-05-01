@@ -23,7 +23,6 @@ def get_access_token_from_file():
         print(f"Error reading access token from file: {e}")
         return None
 
-
 def get_headers():
     access_token = get_access_token_from_file()
     if not access_token:
@@ -33,7 +32,6 @@ def get_headers():
         "Content-Type": "application/json"
     }
 
-
 def check_observation_in_openemr(patient_resource_id):
     url = f"{BASE_URL}/Observation?patient={patient_resource_id}"
     headers = get_headers()
@@ -41,6 +39,7 @@ def check_observation_in_openemr(patient_resource_id):
         response = requests.get(url=url, headers=headers)
         response.raise_for_status()
         data = response.json()
+        #pprint(data)
         if "entry" in data and len(data["entry"]) > 0:
             print(f"Observation resource exists for patient {patient_resource_id} in OpenEMR.")
             return True
@@ -51,62 +50,45 @@ def check_observation_in_openemr(patient_resource_id):
         print(f"Error checking Observation in OpenEMR: {e}")
         return False
 
-
-def create_observation_resource(patient_resource_id):
-    url = f"{primary_care_EHR}/Observation"
+def select_first_observation(patient_resource_id):
+    url = f"{BASE_URL}/Observation?patient={patient_resource_id}"
     headers = get_headers()
-
-    # Example: Body temperature observation
-    observation_data = {
-        "resourceType": "Observation",
-        "status": "final",
-        "category": [
-            {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                        "code": "vital-signs",
-                        "display": "Vital Signs"
-                    }
-                ]
-            }
-        ],
-        "code": {
-            "coding": [
-                {
-                    "system": "http://loinc.org",
-                    "code": "8310-5",  # LOINC code for body temperature
-                    "display": "Body temperature"
-                }
-            ],
-            "text": "Body temperature"
-        },
-        "subject": {
-            "reference": f"Patient/{patient_resource_id}"
-        },
-        "effectiveDateTime": "2025-05-01T10:00:00Z",
-        "valueQuantity": {
-            "value": 37.2,
-            "unit": "degrees C",
-            "system": "http://unitsofmeasure.org",
-            "code": "Cel"
-        }
-    }
-
     try:
-        response = requests.post(url, headers=headers, json=observation_data)
+        response = requests.get(url=url, headers=headers)
         response.raise_for_status()
-        print("Observation resource created successfully in Primary Care EHR.")
-        pprint(response.json())
+        data = response.json()
+        if "entry" in data and len(data["entry"]) > 0:
+            print(f"Total observations found for patient {patient_resource_id}: {len(data['entry'])}")
+            # Loop through the observations and select the first one
+            for entry in data["entry"]:
+                first_observation = entry.get("resource", {})
+                print("First observation found:")
+                pprint(first_observation)
+                return first_observation
+        else:
+            print(f"No observations found for patient {patient_resource_id}.")
+            return None
     except requests.exceptions.RequestException as e:
-        print(f"Error creating Observation resource: {e}")
-        if e.response is not None:
-            print("Response content:", e.response.text)
+        print(f"Error fetching observations: {e}")
+        return None
 
+#fetch the first observation and save it as json file in data
+def save_first_observation_to_file(patient_resource_id):
+    first_observation = select_first_observation(patient_resource_id)
+    if first_observation:
+        file_path = data_dir / f"first_observation_{patient_resource_id}.json"
+        try:
+            with open(file_path, "w") as json_file:
+                json.dump(first_observation, json_file, indent=2)
+            print(f"First observation saved successfully at: {file_path}")
+        except Exception as e:
+            print(f"Error saving first observation to file: {e}")
+    else:
+        print("No observation found to save.")
 
 # Main execution
 if __name__ == '__main__':
-    patient_id = '985ac812-ddd2-49ce-9806-160e27d7cfa7'
+    patient_resource_id = '985ac812-ddd2-49ce-9806-160e27d7cfa7'
     print('-------------------------------------------------------------')
-    if not check_observation_in_openemr(patient_id):
-        create_observation_resource(patient_id)
+    check_observation_in_openemr(patient_resource_id)
+    save_first_observation_to_file(patient_resource_id)
