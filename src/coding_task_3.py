@@ -87,7 +87,7 @@ def select_blood_pressure_observation(patient_resource_id):
         print(f"Error fetching observations: {e}")
         return None
 
-#Fetch the first observation and save it using the patient ID from file
+#Fetch the blood observation and save it using the patient ID from file
 def save_blood_pressure_observation_to_file(patient_resource_id):
     blood_observation = select_blood_pressure_observation(patient_resource_id)
     if blood_observation:
@@ -101,25 +101,69 @@ def save_blood_pressure_observation_to_file(patient_resource_id):
     else:
         print("No blood pressure observation found to save.")
 
-#Post the observation data to the Primary Care EHR FHIR server.
-def post_observation_to_primary_care_ehr(blood_observation):
+
+# Post the observation to the Primary Care EHR FHIR server
+import requests
+from pathlib import Path
+
+def post_observation_to_primary_care_ehr(blood_observation, primary_care_EHR, data_dir):
     url = f"{primary_care_EHR}/Observation"
-    headers = get_headers()
+    headers = {
+        "Content-Type": "application/fhir+json"
+    }
+
     try:
         response = requests.post(url=url, headers=headers, json=blood_observation)
         response.raise_for_status()
         print("Observation posted successfully to Primary Care EHR.")
-        pprint(response.json())
+        observation_response = response.json()
+        #pprint(observation_response)
+
+        # Save observation ID
+        observation_id = observation_response.get("id")
+        if observation_id:
+            data_dir = Path(data_dir)  # Ensure it's a Path object
+            file_path = data_dir / "observation_id.txt"
+            with open(file_path, "w") as f:
+                f.write(observation_id)
+            print(f"Observation ID saved to {file_path}")
+        else:
+            print("No observation ID returned in response.")
+
     except requests.exceptions.RequestException as e:
         print(f"Error posting observation to Primary Care EHR: {e}")
-
+        if 'response' in locals() and response is not None:
+            print(response.text)
 
 # Main execution
 if __name__ == '__main__':
     patient_resource_id = '985ac812-ddd2-49ce-9806-160e27d7cfa7'
+
+    # Fetch the blood pressure observation
     blood_observation = select_blood_pressure_observation(patient_resource_id)
     print('-------------------------------------------------------------')
+
+    # Check if the observation exists in OpenEMR
     check_observation_in_openemr(patient_resource_id)
+
+    # Save the blood pressure observation to a file
     save_blood_pressure_observation_to_file(patient_resource_id)
-    post_observation_to_primary_care_ehr(blood_observation)
-    select_blood_pressure_observation(patient_resource_id)
+
+    # Read Primary Care EHR patient ID
+    primary_care_patient_id = load_patient_id_from_file()
+    if not primary_care_patient_id:
+        print("Aborting: No valid patient ID for Primary Care EHR.")
+        exit()
+
+    # Replace the subject reference to match Primary Care EHR patient
+    if blood_observation:
+        blood_observation["subject"] = {
+            "reference": f"Patient/{primary_care_patient_id}"
+        }
+        print(f"Updated observation subject to Primary Care EHR Patient/{primary_care_patient_id}")
+
+        # Post to Primary Care EHR
+        post_observation_to_primary_care_ehr(blood_observation, primary_care_EHR, data_dir)
+    else:
+        print("Aborting: No observation to post.")
+
