@@ -26,4 +26,4 @@ The diagram shows four key message flows between organizations:
 * Treatment details and recommendations from Hospital to Clinic
 * Follow-up referral from Hospital back to Clinic when needed
 
-![BPMN diagram](data/BPMN_diagram.png)
+![BPMN diagram](src/data/BPMN_diagram.png)
