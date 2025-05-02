@@ -18,5 +18,10 @@ def validate_resource(file_name: str, resource_type: str):
     print(json.dumps(response.json(), indent=2))
 
 
+
 if __name__ == '__main__':
-    validate_resource("patient", "Patient")
+    #validate_resource("patient", "Patient")
+    #validate_resource("parent_condition", "Condition")
+    validate_resource(file_name= "child_condition", resource_type= "Condition")
+
+
