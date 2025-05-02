@@ -65,7 +65,7 @@ def post_procedure_to_primary_care_ehr(procedure):
         response.raise_for_status()  # Check for errors in the response
         print("Procedure posted successfully to Primary Care EHR.")
         procedure_response = response.json()
-        print(procedure_response)
+        pprint(procedure_response)
 
         # Save procedure ID
         procedure_id = procedure_response["id"]
