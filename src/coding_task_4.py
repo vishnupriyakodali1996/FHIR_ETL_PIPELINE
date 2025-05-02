@@ -63,7 +63,6 @@ if __name__ == "__main__":
     primary_care_patient_id = load_patient_id_from_file()
     check_existing_procedures(primary_care_patient_id)
 
-    # Load the procedure from file and update the subject
     try:
         with open(DATA_DIR / "new_procedure_template.json") as f:
             procedure_resource = json.load(f)
