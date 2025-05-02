@@ -8,7 +8,6 @@ BASE_URL = "https://in-info-web20.luddy.indianapolis.iu.edu/apis/default/fhir"
 Base_hermes_url = "http://159.65.173.51:8080/v1/snomed/concepts"
 primary_care_EHR = "http://137.184.71.65:8080/fhir"
 
-data_dir = Path("/Users/laurandoigo/PycharmProjects/GROUP_PROJECT/src/data") #replace with your path
 
 def get_access_token_from_file():
     file_path = Path(data_dir / "access_token.json")
@@ -24,14 +23,13 @@ def get_access_token_from_file():
         print(f"Error reading access token from file: {e}")
         return None
 
+
 def get_headers():
     access_token = get_access_token_from_file()
-    if not access_token:
-        raise ValueError("No access token found.")
-    return {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
     }
+    return headers
 
 #read new patient ID from patient_id.txt
 def load_patient_id_from_file():
