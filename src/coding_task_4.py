@@ -23,6 +23,7 @@ def get_access_token_from_file():
         return None
 
 
+
 def get_headers():
     access_token = get_access_token_from_file()
     headers = {
@@ -39,6 +40,7 @@ def load_patient_id_from_file():
     except FileNotFoundError:
         print("Error: patient_id.txt not found.")
         return None
+
 
 
 # Load Observation ID from file (if exists)
@@ -119,3 +121,4 @@ if __name__ == '__main__':
 
     # Post the procedure to the FHIR server
     post_procedure_to_primary_care_ehr(procedure_template)
+
