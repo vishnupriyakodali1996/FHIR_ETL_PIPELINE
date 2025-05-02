@@ -60,7 +60,8 @@ def check_observation_in_openemr(patient_resource_id):
         print(f"Error checking Observation in OpenEMR: {e}")
         return False
 
-def select_first_observation(patient_resource_id):
+def select_blood_pressure_observation(patient_resource_id):
+
     url = f"{BASE_URL}/Observation?patient={patient_resource_id}"
     headers = get_headers()
     try:
@@ -69,39 +70,43 @@ def select_first_observation(patient_resource_id):
         data = response.json()
         if "entry" in data and len(data["entry"]) > 0:
             print(f"Total observations found for patient {patient_resource_id}: {len(data['entry'])}")
-            # Loop through the observations and select the first one
+            # Loop through the observations and check for blood pressure
             for entry in data["entry"]:
-                first_observation = entry.get("resource", {})
-                print("First observation found:")
-                pprint(first_observation)
-                return first_observation
+                observation = entry.get("resource", {})
+                coding = observation.get("code", {}).get("coding", [])
+                for code in coding:
+                    if code.get("code") in ["85354-9"]:  # LOINC code for blood pressure panel
+                        print("Blood pressure observation found:")
+                        pprint(observation)
+                        return observation
+            print(f"No blood pressure observation found for patient {patient_resource_id}.")
         else:
             print(f"No observations found for patient {patient_resource_id}.")
-            return None
+        return None
     except requests.exceptions.RequestException as e:
         print(f"Error fetching observations: {e}")
         return None
 
-# Fetch the first observation and save it using the patient ID from file
-def save_first_observation_to_file(patient_resource_id):
-    first_observation = select_first_observation(patient_resource_id)
-    if first_observation:
-        file_path = data_dir / f"first_observation_{load_patient_id_from_file()}.json"
+#Fetch the first observation and save it using the patient ID from file
+def save_blood_pressure_observation_to_file(patient_resource_id):
+    blood_observation = select_blood_pressure_observation(patient_resource_id)
+    if blood_observation:
+        file_path = data_dir / f"blood_observation_{load_patient_id_from_file()}.json"
         try:
             with open(file_path, "w") as json_file:
-                json.dump(first_observation, json_file, indent=2)
-            print(f"First observation saved successfully at: {file_path}")
+                json.dump(blood_observation, json_file, indent=2)
+            print(f"Blood pressure observation saved successfully at: {file_path}")
         except Exception as e:
-            print(f"Error saving first observation to file: {e}")
+            print(f"Error saving blood pressure observation to file: {e}")
     else:
-        print("No observation found to save.")
+        print("No blood pressure observation found to save.")
 
 #Post the observation data to the Primary Care EHR FHIR server.
-def post_observation_to_primary_care_ehr(observation_data):
+def post_observation_to_primary_care_ehr(blood_observation):
     url = f"{primary_care_EHR}/Observation"
     headers = get_headers()
     try:
-        response = requests.post(url=url, headers=headers, json=observation_data)
+        response = requests.post(url=url, headers=headers, json=blood_observation)
         response.raise_for_status()
         print("Observation posted successfully to Primary Care EHR.")
         pprint(response.json())
@@ -112,8 +117,9 @@ def post_observation_to_primary_care_ehr(observation_data):
 # Main execution
 if __name__ == '__main__':
     patient_resource_id = '985ac812-ddd2-49ce-9806-160e27d7cfa7'
-    first_observation = select_first_observation(patient_resource_id)
+    blood_observation = select_blood_pressure_observation(patient_resource_id)
     print('-------------------------------------------------------------')
     check_observation_in_openemr(patient_resource_id)
-    save_first_observation_to_file(patient_resource_id)
-    post_observation_to_primary_care_ehr(first_observation)
+    save_blood_pressure_observation_to_file(patient_resource_id)
+    post_observation_to_primary_care_ehr(blood_observation)
+    select_blood_pressure_observation(patient_resource_id)
