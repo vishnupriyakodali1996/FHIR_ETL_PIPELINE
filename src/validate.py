@@ -5,7 +5,6 @@ from pathlib import Path
 data_dir = Path.cwd() / "data"
 FHIR_SERVER_URL = "http://137.184.71.65:8080/fhir"
 
-
 def validate_resource(file_name: str, resource_type: str):
     with open(data_dir / f"{file_name}.json") as f:
         resource = json.load(f)
