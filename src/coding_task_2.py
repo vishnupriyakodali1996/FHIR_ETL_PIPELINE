@@ -27,11 +27,11 @@ def get_headers():
     return headers
 
 BASE_URL = "https://in-info-web20.luddy.indianapolis.iu.edu/apis/default/fhir"
-Base_hermes_url = "http://159.65.173.51:8080/v1/snomed/concepts"
+BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
 primary_care_EHR = "http://137.184.71.65:8080/fhir"
 FHIR_SERVER_URL = "http://137.184.71.65:8080/fhir"
 
-# looking for one patient resource based on resource ID
+# Get patient
 def get_fhir_patient(resource_id):
     url = f'{BASE_URL}/Patient/{resource_id}'
     response = requests.get(url=url, headers=get_headers())
@@ -91,10 +91,7 @@ def get_concept_id(patient_resource_id):
         print(f"{code} is the concept ID for Condition: {display}")
 
 
-# Get parent term for the condition of the patient
-BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
-
-
+# Get child term for the condition of the patient
 def get_child(patient_resource_id):
     # Fetch condition from FHIR server
     condition_url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
@@ -117,12 +114,15 @@ def get_child(patient_resource_id):
     ch_concept_id= data[1]["conceptId"]
     ch_pref_term= data[1]["preferredTerm"]
     # get the finding site for child
-    snomed_url = f'{BASE_HERMES_URL}/concepts/{code}/properties?expand=1&format=id:syn'
+    snomed_url = (f'{BASE_HERMES_URL}/concepts/{code}/properties?expand=0&format=id:syn')
     snomed_resp = requests.get(snomed_url)
-    data = snomed_resp.json()
-    pprint(data)
-    for items in data["363698007:Finding site"]:
-        items[2]
+    finding_site_data = snomed_resp.json()
+    pprint(finding_site_data)
+    finding_site = finding_site_data['1'].get('363698007:Finding site')
+    #print(f"Finding site:{finding_site}")
+    find_site_code = finding_site.split(":")[0]
+    find_site_name = finding_site.split(":")[1]
+    #print(f"Finding site for {code} is {find_site_name}")
     print(f"Child SNOMED condition for {display} is {ch_pref_term} and concept-ID is {ch_concept_id}")
     print("-------------------------------------------------------------------------------------")
 
@@ -138,7 +138,7 @@ def create_child_condition_json(patient_resource_id):
     # Extract original SNOMED code
     original_code = condition['code']['coding'][0]['code']
 
-    # Fetch SNOMED parent
+    # Fetch SNOMED child condition
     snomed_url = f'{BASE_HERMES_URL}/search?constraint=<{original_code}'
     snomed_response = requests.get(snomed_url)
     #print(snomed_response.url)
@@ -147,14 +147,32 @@ def create_child_condition_json(patient_resource_id):
     ch_concept_id = data[1]["conceptId"]
     ch_pref_term = data[1]["preferredTerm"]
 
-    # Replace code and display
+    # Getting body site for child condition from SNOMED
+    snomed_url = (f'{BASE_HERMES_URL}/concepts/{ch_concept_id}/properties?expand=0&format=id:syn')
+    snomed_resp = requests.get(snomed_url)
+    finding_site_data = snomed_resp.json()
+    finding_site = finding_site_data['1'].get('363698007:Finding site')
+    find_site_code = finding_site.split(":")[0]
+    find_site_name = finding_site.split(":")[1]
+
+    # Replace patient status the condition code and display
     condition['code']['coding'][0]['code'] = str(ch_concept_id)
     condition['code']['coding'][0]['display'] = ch_pref_term
     condition['code']['text'] = ch_pref_term  # optional but helpful
     for item in condition["clinicalStatus"]["coding"]:
         item["code"] = "active"
         item["display"] = "Active"
-    # Save to new file
+
+    # Creating a body site
+    condition["bodySite"] = [{
+        "coding": [{
+            "system": "http://snomed.info/sct",
+            "code": find_site_code,
+            "display": find_site_name
+        }],
+        "text": find_site_name
+    }]
+# Save to new file
     with open(data_dir / "child_condition.json", "w") as f:
         json.dump(condition, f, indent=2)
 
@@ -183,4 +201,4 @@ if __name__ == '__main__':
     #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_child(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #create_child_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #post_condition("child_condition", "Condition")
+    post_condition("child_condition", "Condition")

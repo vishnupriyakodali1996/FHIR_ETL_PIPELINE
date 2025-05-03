@@ -6,7 +6,6 @@ from src.registration import data_dir
 
 BASE_URL = "https://in-info-web20.luddy.indianapolis.iu.edu/apis/default/fhir"
 BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
-primary_care_EHR = "http://137.184.71.65:8080/fhir/Patient"
 FHIR_SERVER_URL = "http://137.184.71.65:8080/fhir"
 
 def get_access_token_from_file():
@@ -217,7 +216,7 @@ def create_condition_json(patient_resource_id):
     # Replace code and display
     condition['code']['coding'][0]['code'] = str(parent_concept_id)
     condition['code']['coding'][0]['display'] = parent_term
-    condition['code']['text'] = parent_term  # optional but helpful
+    condition['code']['text'] = parent_term
 
     # Save to new file
     with open(data_dir / "parent_condition.json", "w") as f:
@@ -262,23 +261,23 @@ def post_condition(file_name: str, resource_type: str):
 def get_EHR_patient():
     with open(data_dir / "patient_id.txt", "r") as f:
         patient_id = f.read().strip()
-    url = f'{primary_care_EHR}/Patient/{patient_id}'
+    url = f'{FHIR_SERVER_URL}/Patient/{patient_id}'
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
-    pprint(response.json())# Getting patient from primary care EHR
+    pprint(response.json())
 
 # Getting condition from primary care EHR
 def get_EHR_condition():
     with open(data_dir / "condition_id.txt", "r") as f:
         patient_id = f.read().strip()
-    url = f'{primary_care_EHR}/Condition/{patient_id}'
+    url = f'{FHIR_SERVER_URL}/Condition/{patient_id}'
     response = requests.get(url=url, headers=get_headers())
     print(response.url)
     pprint(response.json())
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
-   # get_all_resources()
+    get_all_resources()
     #get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #search_patient_by_name(name_string='Bailey')
     #search_patient_by_name_gender(name_string= 'Bailey', gender= "female")
@@ -287,11 +286,10 @@ if __name__ == '__main__':
     #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    # create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    # create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #post_patient("patient", "Patient")
     #post_condition("parent_condition", "Condition")
-    #get_parent_resource()
-    # get_EHR_patient()
-    get_EHR_condition()
+    #get_EHR_patient()
+    #get_EHR_condition()
 
