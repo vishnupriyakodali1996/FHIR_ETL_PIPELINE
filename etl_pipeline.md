@@ -9,7 +9,7 @@ This page explains how we extracted patient and condition data from the OpenEMR 
 - We searched for a patient using name filters and retrieved their condition data.
 - From the condition, we extracted the SNOMED code.
 - We used the Hermes Terminology Server to get the parent SNOMED concept.
-- We updated the Condition resource with the parent concept and added a `meta.profile`.
+- We updated the Condition resource with the parent concept and added a meta.profile.
 - Then we posted the patient and this condition to the Primary Care EHR server.
 
 ## Task 2 – Child Concept
@@ -36,10 +36,10 @@ This page explains how we extracted patient and condition data from the OpenEMR 
 
 - We loaded the posted Patient and Condition resources from local files.
 - We used Hermes to map the SNOMED code to an ICD-10 code.
-- Using the `hl7apy` library, we generated an HL7 v2 ADT message.
+- Using the hl7apy library, we generated an HL7 v2 ADT message.
 - The message included segments like MSH, PID, PV1, and DG1, and was saved to a text file.
 
 ## Validation
 
-Each resource (Patient and both Conditions) was validated using the appropriate `meta.profile` value before being posted. This ensured conformance to the required FHIR structure.
+Each resource (Patient and both Conditions) was validated using the appropriate meta.profile value before being posted. This ensured conformance to the required FHIR structure.
 
