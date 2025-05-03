@@ -29,7 +29,7 @@ We designed and executed a full ETL pipeline to:
 ## Deliverables
 
 - 5 completed coding tasks (detailed on the ETL page)
-- FHIR resource validation using `meta.profile`
+- FHIR resource validation using meta.profile
 - HL7 message export from FHIR
 - Simple data visualizations
 - Full project documentation on this site
