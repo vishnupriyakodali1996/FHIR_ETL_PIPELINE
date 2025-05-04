@@ -101,6 +101,16 @@ def post_procedure_to_primary_care_ehr(procedure):
             print(response.text)
 
 
+# Getting procedure from primary care EHR
+def get_EHR_procedure():
+    with open(data_dir / "procedure_id.txt", "r") as f:
+        patient_id = f.read().strip()
+    url = f'{primary_care_EHR}/Procedure/{patient_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    pprint(response.json())
+
+
 if __name__ == '__main__':
     patient_id = load_patient_id_from_file()
     observation_id = load_observation_id_from_file()
@@ -109,6 +119,9 @@ if __name__ == '__main__':
         print("Missing patient or observation ID. Aborting.")
         exit()
 
-    procedure = build_procedure_resource(patient_id, observation_id)
-    save_procedure_to_file(procedure, patient_id)
-    post_procedure_to_primary_care_ehr(procedure)
+    #procedure = build_procedure_resource(patient_id, observation_id)
+    #save_procedure_to_file(procedure, patient_id)
+    #post_procedure_to_primary_care_ehr(procedure)
+    get_EHR_procedure()
+
+
