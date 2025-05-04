@@ -1,4 +1,11 @@
-[Home](index.md) | [ETL](etl_pipeline.md) | [BPMN](BPMN.md) | [Insights](insights.md) | [Team](team_contb.md) | [About](About.md)
+# Site Navigation
+
+[Home](./index.md) ||
+[BPMN Model](./BPMN.md) ||
+[ETL Pipeline](./etl_pipeline.md) ||
+[Insights](./insights.md) ||
+[Team Contributions](./team_contrib.md) ||
+[About](./about.md) ||
 
 # Final Project – ETL Pipeline Using FHIR APIs
 

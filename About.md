@@ -1,8 +1,9 @@
-# Site Navigation
+# About
 
-[Home](./index.md) ||
-[BPMN Model](./BPMN.md) ||
-[ETL Pipeline](./etl_pipeline.md) ||
-[Insights](./insights.md) ||
-[Team Contributions](./team_contrib.md) ||
-[About](./about.md) ||
+This project was developed as part of the final assignment for our health informatics course.  
+Our goal was to build an end-to-end ETL (Extract, Transform, Load) pipeline integrating  
+FHIR APIs, SNOMED CT terminology services, and HL7 standards.
+
+We retrieved patient data from OpenEMR, transformed it using SNOMED hierarchies,  
+and posted the structured resources to a Primary Care FHIR server.  
+The project reflects real-world interoperability practices in healthcare systems.
