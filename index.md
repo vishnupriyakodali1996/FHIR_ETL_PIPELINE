@@ -1,4 +1,4 @@
-# Site Navigation
+# Final Project – ETL Pipeline Using FHIR APIs
 
 [Home](./index.md) ||
 [BPMN Model](./BPMN.md) ||
@@ -7,7 +7,7 @@
 [Team Contributions](./team_contrib.md) ||
 [About](./about.md) ||
 
-# Final Project – ETL Pipeline Using FHIR APIs
+
 
 Welcome to our Group 3 project website. This project showcases our ability to build an end-to-end ETL (Extract, Transform, Load) pipeline for healthcare data using real-world FHIR APIs and HL7 standards.
 
