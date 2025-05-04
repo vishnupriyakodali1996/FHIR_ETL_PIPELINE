@@ -1,3 +1,4 @@
+[Home](index.md) | [ETL](etl_pipeline.md) | [BPMN](BPMN.md) | [Insights](insights.md) | [Team](team_contb.md) | [About](About.md)
 # About
 
 This project was developed as part of the final assignment for our health informatics course.  
