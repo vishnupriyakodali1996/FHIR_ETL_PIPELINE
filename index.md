@@ -1,5 +1,3 @@
-# Final Project – ETL Pipeline Using FHIR APIs
-
 [Home](./index.md) ||  
 [BPMN Model](./BPMN.md) ||  
 [ETL Pipeline](./etl_pipeline.md) ||  
