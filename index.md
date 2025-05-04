@@ -1,13 +1,11 @@
-<div align="left">
 
-[Home](./index.md) &#124;  
-[BPMN Model](./BPMN.md) &#124;  
-[ETL Pipeline](./etl_pipeline.md) &#124;  
-[Insights](./insights.md) &#124;  
-[Team Contributions](./team_contrib.md) &#124;  
-[About](./about.md) &#124;
+- [Home](./index.md)
+- [BPMN Model](./BPMN.md)
+- [ETL Pipeline](./etl_pipeline.md)
+- [Insights](./insights.md)
+- [Team Contributions](./team_contrib.md)
+- [About](./about.md)
 
-</div>
 
 ---
 
