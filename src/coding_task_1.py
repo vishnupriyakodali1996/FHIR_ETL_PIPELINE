@@ -1,5 +1,6 @@
 import json
 import requests
+import datetime
 from pprint import pprint
 from pathlib import Path
 from src.registration import data_dir
@@ -195,7 +196,10 @@ def create_patient_json(resource_id):
         json.dump(data, f, indent=2)
     print('------------------------------------------------------------- 10')
 
+# creating condition with parent concept
 str_def_url_condition= "http://hl7.org/fhir/StructureDefinition/Condition"
+str_def_url_condition= "http://hl7.org/fhir/StructureDefinition/Condition"
+system = "http://snomed.info/sct"
 def create_condition_json(patient_resource_id):
     # Get original condition
     url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
@@ -213,15 +217,80 @@ def create_condition_json(patient_resource_id):
     parent_concept_id = snomed_data[0]['conceptId']
     parent_term = snomed_data[0]['preferredTerm']
 
+    # Getting body site for child condition from SNOMED
+    snomed_url = (f'{BASE_HERMES_URL}/concepts/{parent_concept_id}/properties?expand=0&format=id:syn')
+    snomed_resp = requests.get(snomed_url)
+    finding_site_data = snomed_resp.json()
+    finding_site = finding_site_data['1'].get('363698007:Finding site')
+    find_site_code = finding_site.split(":")[0]
+    find_site_name = finding_site.split(":")[1]
+
+    # Fetch severity from snomed
+    severity_url = (f'{BASE_HERMES_URL}/search?s="severe"')
+    resp = requests.get(severity_url)
+    severity_data = resp.json()
+    severity_id = str(severity_data[0].get('conceptId'))
+    severity_term = severity_data[0].get('preferredTerm')
+
+    # Fetch diagnosis from snomed
+    diagnosis_url = (f'{BASE_HERMES_URL}/search?s="diagnosis"')
+    resp_diag = requests.get(diagnosis_url)
+    dianosis_data = resp_diag.json()
+    diagnosis_id = str(dianosis_data[0].get('conceptId'))
+    diagnosis_term = dianosis_data[0].get('preferredTerm')
+
     # Replace code and display
     condition['code']['coding'][0]['code'] = str(parent_concept_id)
     condition['code']['coding'][0]['display'] = parent_term
     condition['code']['text'] = parent_term
 
+    for item in condition["clinicalStatus"]["coding"]:
+        item["code"] = "active"
+        item["display"] = "Active"
+        # Removing the subject reference
+        subject = condition.pop("subject")
+
+    # Adding term diagnosis to category
+    condition["category"].append({
+        "coding": [
+            {
+                "system": system,
+                "code": diagnosis_id,
+                "display": diagnosis_term
+            }
+        ],
+        "text": diagnosis_term
+    })
+
+    # Add severity to the condition
+    condition["severity"] = {
+        "coding": [{
+            "system": system,
+            "code": severity_id,
+            "display": severity_term
+        }],
+        "text": severity_term
+    }
+    # Creating a body site
+    condition["bodySite"] = [{
+        "coding": [{
+            "system": system,
+            "code": find_site_code,
+            "display": find_site_name
+        }],
+        "text": find_site_name
+    }]
+    # Adding back subject reference
+    condition["subject"] = subject
+
+    # Adding current date and time
+    condition["onsetDateTime"] = datetime.datetime.today().strftime('%Y-%m-%d')
+
     # Save to new file
     with open(data_dir / "parent_condition.json", "w") as f:
         json.dump(condition, f, indent=2)
 
+# Positing patient to primary care EHR
 def post_patient(file_name: str, resource_type: str):
     with open(data_dir / f"{file_name}.json") as f:
         resource = json.load(f)
@@ -286,8 +355,8 @@ if __name__ == '__main__':
     #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_concept_id(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_parent(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    # create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    # create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    #create_patient_json(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #post_patient("patient", "Patient")
     #post_condition("parent_condition", "Condition")
     #get_EHR_patient()

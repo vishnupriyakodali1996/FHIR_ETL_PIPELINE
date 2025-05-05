@@ -1,5 +1,6 @@
 import json
 import requests
+import datetime
 from pprint import pprint
 from pathlib import Path
 from src.registration import data_dir
@@ -113,21 +114,24 @@ def get_child(patient_resource_id):
     #pprint(data)
     ch_concept_id= data[1]["conceptId"]
     ch_pref_term= data[1]["preferredTerm"]
+
     # get the finding site for child
-    snomed_url = (f'{BASE_HERMES_URL}/concepts/{code}/properties?expand=0&format=id:syn')
-    snomed_resp = requests.get(snomed_url)
-    finding_site_data = snomed_resp.json()
-    pprint(finding_site_data)
-    finding_site = finding_site_data['1'].get('363698007:Finding site')
-    #print(f"Finding site:{finding_site}")
-    find_site_code = finding_site.split(":")[0]
-    find_site_name = finding_site.split(":")[1]
-    #print(f"Finding site for {code} is {find_site_name}")
+    # snomed_url = (f'{BASE_HERMES_URL}/concepts/{code}/properties?expand=0&format=id:syn')
+    # snomed_resp = requests.get(snomed_url)
+    # finding_site_data = snomed_resp.json()
+    # pprint(finding_site_data)
+    # finding_site = finding_site_data['1'].get('363698007:Finding site')
+    # print(f"Finding site:{finding_site}")
+    # find_site_code = finding_site.split(":")[0]
+    # find_site_name = finding_site.split(":")[1]
+    # print(f"Finding site for {code} is {find_site_name}")
+
     print(f"Child SNOMED condition for {display} is {ch_pref_term} and concept-ID is {ch_concept_id}")
     print("-------------------------------------------------------------------------------------")
 
 # Creating child condition to JSON file
 str_def_url_condition= "http://hl7.org/fhir/StructureDefinition/Condition"
+system = "http://snomed.info/sct"
 def create_child_condition_json(patient_resource_id):
     # Get original condition
     url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
@@ -139,7 +143,7 @@ def create_child_condition_json(patient_resource_id):
     original_code = condition['code']['coding'][0]['code']
 
     # Fetch SNOMED child condition
-    snomed_url = f'{BASE_HERMES_URL}/search?constraint=<{original_code}'
+    snomed_url = f'{BASE_HERMES_URL}/search?constraint=<!{original_code}'
     snomed_response = requests.get(snomed_url)
     #print(snomed_response.url)
     #pprint(snomed_response.json())
@@ -155,6 +159,20 @@ def create_child_condition_json(patient_resource_id):
     find_site_code = finding_site.split(":")[0]
     find_site_name = finding_site.split(":")[1]
 
+    # Fetch severity from snomed
+    severity_url = (f'{BASE_HERMES_URL}/search?s="moderate severity"')
+    resp= requests.get(severity_url)
+    severity_data= resp.json()
+    severity_id= str(severity_data[0].get('conceptId'))
+    severity_term= severity_data[0].get('preferredTerm')
+
+    # Fetch diagnosis from snomed
+    diagnosis_url = (f'{BASE_HERMES_URL}/search?s="diagnosis"')
+    resp_diag = requests.get(diagnosis_url)
+    dianosis_data = resp_diag.json()
+    diagnosis_id= str(dianosis_data[0].get('conceptId'))
+    diagnosis_term= dianosis_data[0].get('preferredTerm')
+
     # Replace patient status the condition code and display
     condition['code']['coding'][0]['code'] = str(ch_concept_id)
     condition['code']['coding'][0]['display'] = ch_pref_term
@@ -163,15 +181,46 @@ def create_child_condition_json(patient_resource_id):
         item["code"] = "active"
         item["display"] = "Active"
 
+    # Removing the subject reference
+    subject = condition.pop("subject")
+
+    # Adding term diagnosis to category
+    condition["category"].append({
+        "coding": [
+            {
+                "system": system,
+                "code": diagnosis_id,
+                "display": diagnosis_term
+            }
+        ],
+        "text": diagnosis_term
+    })
+
+    # Add severity to the condition
+    condition["severity"] = {
+        "coding": [{
+            "system": system,
+            "code": severity_id,
+            "display": severity_term
+        }],
+        "text": severity_term
+    }
     # Creating a body site
     condition["bodySite"] = [{
         "coding": [{
-            "system": "http://snomed.info/sct",
+            "system": system,
             "code": find_site_code,
             "display": find_site_name
         }],
         "text": find_site_name
     }]
+
+    #Adding back subject reference
+    condition["subject"] = subject
+
+    # Adding current date and time
+    condition["onsetDateTime"] = datetime.datetime.today().strftime('%Y-%m-%d')
+
 # Save to new file
     with open(data_dir / "child_condition.json", "w") as f:
         json.dump(condition, f, indent=2)
@@ -195,10 +244,20 @@ def post_condition(file_name: str, resource_type: str):
     with open(data_dir / "child_condition_id.txt", "w") as f:
         f.write(condition_id)
 
+# Getting condition from primary care EHR
+def get_EHR_condition():
+    with open(data_dir / "child_condition_id.txt", "r") as f:
+        patient_id = f.read().strip()
+    url = f'{FHIR_SERVER_URL}/Condition/{patient_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    pprint(response.json())
+
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
     #get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #get_child(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
     #create_child_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    post_condition("child_condition", "Condition")
+    #post_condition("child_condition", "Condition")
+    #get_EHR_condition()
