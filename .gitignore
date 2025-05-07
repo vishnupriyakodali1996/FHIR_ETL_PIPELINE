@@ -163,3 +163,4 @@ cython_debug/
 /src/data/client_secret.txt
 /src/data/access_token.json
 /src/data/access_token.txt
+src/data/access_token.json
