@@ -70,6 +70,28 @@ Linking Observation to Procedure
     }
 ]
 ```
+```python
+def post_procedure_to_primary_care_ehr(procedure):
+    url = f"{primary_care_EHR}/Procedure"
+    headers = {"Content-Type": "application/fhir+json"}
+    try:
+        response = requests.post(url, headers=headers, json=procedure)
+        response.raise_for_status()
+        print("Procedure posted successfully.")
+        resp = response.json()
+        pprint(resp)
+        procedure_id = resp.get("id")
+        if procedure_id:
+            with open(data_dir / "procedure_id.txt", "w") as f:
+                f.write(procedure_id)
+            print(f"Procedure ID saved to procedure_id.txt")
+    except requests.exceptions.RequestException as e:
+        print(f"Error posting procedure: {e}")
+        if response is not None:
+            print(response.text)
+```
+
+
 ## Task 5 – HL7 ADT Message Generation
 
 Loaded the Patient and Condition resources from local JSON files.
