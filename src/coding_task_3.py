@@ -40,24 +40,6 @@ def load_patient_id_from_file():
         print("Error: patient_id.txt not found.")
         return None
 
-def check_observation_in_openemr(patient_resource_id):
-    url = f"{BASE_URL}/Observation?patient={patient_resource_id}"
-    headers = get_headers()
-    try:
-        response = requests.get(url=url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        #pprint(data)
-        if "entry" in data and len(data["entry"]) > 0:
-            print(f"Observation resource exists for patient {patient_resource_id} in OpenEMR.")
-            return True
-        else:
-            print(f"No Observation resource found for patient {patient_resource_id} in OpenEMR.")
-            return False
-    except requests.exceptions.RequestException as e:
-        print(f"Error checking Observation in OpenEMR: {e}")
-        return False
-
 def select_blood_pressure_observation(patient_resource_id):
 
     url = f"{BASE_URL}/Observation?patient={patient_resource_id}"
@@ -82,86 +64,120 @@ def select_blood_pressure_observation(patient_resource_id):
             print(f"No observations found for patient {patient_resource_id}.")
         return None
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching observations: {e}")
-        return None
+        print(None)
 
-#Fetch the blood observation and save it using the patient ID from file
-def save_blood_pressure_observation_to_file(patient_resource_id):
-    blood_observation = select_blood_pressure_observation(patient_resource_id)
-    if blood_observation:
-        file_path = data_dir / f"blood_observation_{load_patient_id_from_file()}.json"
-        try:
-            with open(file_path, "w") as json_file:
-                json.dump(blood_observation, json_file, indent=2)
-            print(f"Blood pressure observation saved successfully at: {file_path}")
-        except Exception as e:
-            print(f"Error saving blood pressure observation to file: {e}")
-    else:
-        print("No blood pressure observation found to save.")
-
-
-# Post the observation to the Primary Care EHR FHIR server
-import requests
-from pathlib import Path
-
-def post_observation_to_primary_care_ehr(blood_observation, primary_care_EHR, data_dir):
-    url = f"{primary_care_EHR}/Observation"
-    headers = {
-        "Content-Type": "application/fhir+json"
+def create_blood_pressure_observation(patient_id):
+    return {
+        "resourceType": "Observation",
+        "id": "blood-pressure",
+        "meta": {
+            "profile": ["http://hl7.org/fhir/StructureDefinition/vitalsigns"]
+        },
+        "status": "final",
+        "category": [{
+            "coding": [{
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+            }]
+        }],
+        "code": {
+            "coding": [{
+                "system": "http://loinc.org",
+                "code": "85354-9",
+                "display": "Blood pressure panel with all children optional"
+            }],
+            "text": "Blood pressure systolic & diastolic"
+        },
+        "subject": {
+            "reference": f"Patient/{patient_id}"
+        },
+        "effectiveDateTime": "2025-05-07",
+        "bodySite": {
+            "coding": [{
+                "system": "http://snomed.info/sct",
+                "code": "368209003",
+                "display": "Right arm"
+            }]
+        },
+        "component": [
+            {
+                "code": {
+                    "coding": [
+                        {"system": "http://loinc.org",
+                         "code": "8480-6"}
+                    ]
+                },
+                "valueQuantity": {
+                    "value": 140,
+                    "unit": "mmHg",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "mm[Hg]"
+                },
+                "interpretation": [{
+                    "coding": [{
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                        "code": "H",
+                        "display": "Above normal"
+                    }],
+                    "text": "Normal"
+                }]
+            },
+            {
+                "code": {
+                    "coding": [
+                        {"system": "http://loinc.org",
+                         "code": "8462-4" }
+                    ]
+                },
+                "valueQuantity": {
+                    "value": 90,
+                    "unit": "mmHg",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "mm[Hg]"
+                },
+                "interpretation": [{
+                    "coding": [{
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                        "code": "H",
+                        "display": "High"
+                    }],
+                    "text": "Above normal"
+                }]
+            }
+        ]
     }
 
+def post_observation_to_primary_care_ehr(observation):
+    url = f"{primary_care_EHR}/Observation"
+    headers = {"Content-Type": "application/fhir+json"}
     try:
-        response = requests.post(url=url, headers=headers, json=blood_observation)
+        response = requests.post(url, headers=headers, json=observation)
         response.raise_for_status()
-        print("Observation posted successfully to Primary Care EHR.")
-        observation_response = response.json()
-        #pprint(observation_response)
-
-        # Save observation ID
-        observation_id = observation_response.get("id")
+        print("Observation posted successfully.")
+        resp = response.json()
+        pprint(resp)
+        observation_id = resp.get("id")
         if observation_id:
-            data_dir = Path(data_dir)  # Ensure it's a Path object
-            file_path = data_dir / "observation_id.txt"
-            with open(file_path, "w") as f:
+            with open(data_dir / "observation_id.txt", "w") as f:
                 f.write(observation_id)
-            print(f"Observation ID saved to {file_path}")
-        else:
-            print("No observation ID returned in response.")
-
+            print("Observation ID saved to observation_id.txt")
     except requests.exceptions.RequestException as e:
-        print(f"Error posting observation to Primary Care EHR: {e}")
-        if 'response' in locals() and response is not None:
+        print(f"Error posting observation: {e}")
+        if response is not None:
             print(response.text)
 
-# Main execution
+# Getting observation from primary care EHR
+def get_EHR_observation():
+    with open(data_dir / "observation_id.txt", "r") as f:
+        observation_id = f.read().strip()
+    url = f'{primary_care_EHR}/Observation/{observation_id}'
+    response = requests.get(url=url, headers=get_headers())
+    print(response.url)
+    pprint(response.json())
+
 if __name__ == '__main__':
-    patient_resource_id = '985ac812-ddd2-49ce-9806-160e27d7cfa7'
-
-    # Fetch the blood pressure observation
-    blood_observation = select_blood_pressure_observation(patient_resource_id)
-    print('-------------------------------------------------------------')
-
-    # Check if the observation exists in OpenEMR
-    check_observation_in_openemr(patient_resource_id)
-
-    # Save the blood pressure observation to a file
-    save_blood_pressure_observation_to_file(patient_resource_id)
-
-    # Read Primary Care EHR patient ID
-    primary_care_patient_id = load_patient_id_from_file()
-    if not primary_care_patient_id:
-        print("Aborting: No valid patient ID for Primary Care EHR.")
-        exit()
-
-    # Replace the subject reference to match Primary Care EHR patient
-    if blood_observation:
-        blood_observation["subject"] = {
-            "reference": f"Patient/{primary_care_patient_id}"
-        }
-        print(f"Updated observation subject to Primary Care EHR Patient/{primary_care_patient_id}")
-
-        # Post to Primary Care EHR
-        post_observation_to_primary_care_ehr(blood_observation, primary_care_EHR, data_dir)
-    else:
-        print("Aborting: No observation to post.")
-
+    patient_id = load_patient_id_from_file()
+    observation = create_blood_pressure_observation(patient_id)
+    post_observation_to_primary_care_ehr(observation)
+    get_EHR_observation()

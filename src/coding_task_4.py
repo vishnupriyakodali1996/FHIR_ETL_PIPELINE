@@ -122,6 +122,6 @@ if __name__ == '__main__':
     #procedure = build_procedure_resource(patient_id, observation_id)
     #save_procedure_to_file(procedure, patient_id)
     #post_procedure_to_primary_care_ehr(procedure)
-    get_EHR_procedure()
+    #get_EHR_procedure()
 
 
