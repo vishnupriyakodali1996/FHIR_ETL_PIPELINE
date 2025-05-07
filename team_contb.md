@@ -2,10 +2,10 @@
 
 # Team Contributions
 
-| Name         | Contributions |
-|--------------|---------------|
-| **Rupa**     | Initiated and managed the GitHub repository, provided leadership for the project, contributed to Coding Task 1, verified Task 2, and participated in the final presentation. |
-| **Laura**    | Developed Coding Tasks 3 and 4, including resource creation and content posting. |
-| **Vishnupriya** | Contributed to Coding Tasks 1, 2, and 5, led the validation process, and verified the accuracy of all coding tasks. |
-| **Thanzeem** | Completed Coding Tasks 1, 2, and 5, contributed to validation, designed the BPMN diagram, and initialized markdown files and configuration settings (config.yml). |
-| **Pranathi** | Worked on Coding Task 4, verified Coding Tasks 3 and 4, and led website development including the About page, ETL pipeline documentation, index page, README, and Team Contributions section. |
+| Name                            | Roles                    | Contributions                                                                                                                                                                                 | Reflection                                                                                             | 
+|---------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| **Rupa Sri Manchikalapudi**     | Project Lead & Validator | Initiated and managed the GitHub repository, provided leadership for the project, contributed to Coding Task 1, verified Task 2, and participated in the final presentation.                  | Learned to automate FHIR queries, map SNOMED parent concepts, and validate structured resources        |
+| **Laura Ndoigo**                | Resource Developer       | Developed Coding Tasks 3 and 4, including resource creation and content posting.                                                                                                              | Gained hands-on experience in generating and posting structured FHIR JSON resources                    |
+| **Vishnupriya Kodali**          | Validation Lead          | Contributed to Coding Tasks 1, 2, and 5, led the validation process, and verified the accuracy of all coding tasks.                                                                           | Learned to work with SNOMED child concepts, HL7 v2 message generation, and resource profile validation |
+| **Thanzeem Noorul Amin Razak ** | Technical Designer       | Completed Coding Tasks 1, 2, and 5, contributed to validation, designed the BPMN diagram, and initialized markdown files and configuration settings (config.yml).                             | Improved understanding of API querying, error handling, and HL7 segment structuring                    |
+| **Lalitha Pranathi Pulavarthy** | Web & Documentation Lead | Worked on Coding Task 4, verified Coding Tasks 3 and 4, and led website development including the About page, ETL pipeline documentation, index page, README, and Team Contributions section. | Learned organizing technical documentation and integrating ETL process insights into the website       |
