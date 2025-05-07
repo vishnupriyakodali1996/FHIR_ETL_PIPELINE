@@ -161,8 +161,6 @@ def get_concept_id(patient_resource_id):
     print('------------------------------------------------------------- 8')
 
 # Get parent term for the condition of the patient
-BASE_HERMES_URL = 'http://159.65.173.51:8080/v1/snomed'
-
 def get_parent(patient_resource_id):
     # Fetch condition from FHIR server
     condition_url = f'{BASE_URL}/Condition?patient={patient_resource_id}'
@@ -183,22 +181,41 @@ def get_parent(patient_resource_id):
     print(f'The parent concept for {display} is {parent_id} with preferred term {parent_term}')
     print('------------------------------------------------------------- 9')
 
-str_def_url_pt= "http://hl7.org/fhir/StructureDefinition/Patient"
+str_def_url_pt= "http://example.org/StructureDefinition/my-patient-profile"
 def create_patient_json(resource_id):
     url = f'{BASE_URL}/Patient/{resource_id}'
     response = requests.get(url=url, headers=get_headers())
     #print(response.url)
     data=response.json()
-    data["meta"]["profile"] = [str_def_url_pt]
-    data.pop("extension")
     # Create 'profile' key in 'meta' and assign it a list containing the URL
+    data["meta"]["profile"] = [str_def_url_pt]
+    # Remove us core extensions
+    data.pop("extension")
+    # Removing patient identifier: SSN
+    for i in range(len(data.get("identifier", []))):
+        if "us-ssn" in data["identifier"][i].get("system", ""):
+            data["identifier"].pop(i)
+            break
+    # Adding district
+    data["address"][0]["district"] = "Not found"
+
+    # Getting required details to substitute in text field
+    address = data["address"][0]
+    line = address.get("line")[0]
+    city = address.get("city")
+    state = address.get("state")
+    postal = address.get("postalCode", "")
+
+    # Creating  the 'text' field in address
+    address["text"] = f"{line} {city}, {state}, {postal}"
+
+    # Creating patient.json
     with open(data_dir / "patient.json", "w") as f:
         json.dump(data, f, indent=2)
     print('------------------------------------------------------------- 10')
 
 # creating condition with parent concept
-str_def_url_condition= "http://hl7.org/fhir/StructureDefinition/Condition"
-str_def_url_condition= "http://hl7.org/fhir/StructureDefinition/Condition"
+str_def_url_condition= "http://example.org/StructureDefinition/my-condition-profile"
 system = "http://snomed.info/sct"
 def create_condition_json(patient_resource_id):
     # Get original condition
