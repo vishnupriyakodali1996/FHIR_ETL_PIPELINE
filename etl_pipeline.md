@@ -70,7 +70,7 @@ Linking Observation to Procedure
     }
 ]
 ```
-Task 5 – HL7 ADT Message Generation
+## Task 5 – HL7 ADT Message Generation
 
 Loaded the Patient and Condition resources from local JSON files.
 Queried Hermes to map SNOMED code to ICD-10 using map/447562003.
