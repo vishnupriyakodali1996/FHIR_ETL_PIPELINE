@@ -26,4 +26,4 @@ This project helped us understand how healthcare data can be handled using real-
 
 ## Overall
 
-The project gave us hands-on experience with how data flows in healthcare systems and how standards are used to ensure interoperability between systems.
+This project provided practical experience with real-world healthcare data exchange using standards like FHIR, SNOMED, and HL7. We learned how to ensure interoperability between systems by integrating OpenEMR, Hermes, and Primary Care EHR. It strengthened our understanding of data validation, transformation, and resource linking in clinical workflows.
