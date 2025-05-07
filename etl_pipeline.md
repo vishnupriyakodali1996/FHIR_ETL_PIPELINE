@@ -99,6 +99,22 @@ Queried Hermes to map SNOMED code to ICD-10 using map/447562003.
 Constructed an HL7 v2 ADT^A01 message using the hl7apy library.
 Included MSH, PID, PV1, and DG1 segments.
 
+# Fetch ICD-10 mapping
+```python
+    map_url = f"{BASE_HERMES_URL}/{condition_code}/map/447562003"
+    map_response = requests.get(map_url)
+    mapping_data = map_response.json()
+    if not mapping_data:
+        print(f"No ICD-10 mapping found for SNOMED code {condition_code}")
+        raise ValueError(f"No ICD-10 mapping found for SNOMED code {condition_code}")
+
+    mapping = mapping_data[0]
+    icd_code = mapping["mapTarget"]
+    icd_display = mapping.get("mapTargetName", "ICD-10 Term")
+
+    print(f"{icd_code} is the mapped ICD code for SNOMED code: {condition_code} - {condition_display}")
+```
+
 DG1 Segment with ICD Code:
 ```python
 msg.dg1.dg1_3 = f"{icd_code}^{icd_display}^I10"
