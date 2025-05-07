@@ -106,7 +106,7 @@ def get_EHR_procedure():
     with open(data_dir / "procedure_id.txt", "r") as f:
         patient_id = f.read().strip()
     url = f'{primary_care_EHR}/Procedure/{patient_id}'
-    response = requests.get(url=url, headers=get_headers())
+    response = requests.get(url=url)
     print(response.url)
     pprint(response.json())
 

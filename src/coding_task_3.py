@@ -172,7 +172,7 @@ def get_EHR_observation():
     with open(data_dir / "observation_id.txt", "r") as f:
         observation_id = f.read().strip()
     url = f'{primary_care_EHR}/Observation/{observation_id}'
-    response = requests.get(url=url, headers=get_headers())
+    response = requests.get(url=url)
     print(response.url)
     pprint(response.json())
 

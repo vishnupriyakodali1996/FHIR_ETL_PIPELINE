@@ -234,7 +234,7 @@ def create_condition_json(patient_resource_id):
     parent_concept_id = snomed_data[0]['conceptId']
     parent_term = snomed_data[0]['preferredTerm']
 
-    # Getting body site for child condition from SNOMED
+    # Getting body site for parent condition from SNOMED
     snomed_url = (f'{BASE_HERMES_URL}/concepts/{parent_concept_id}/properties?expand=0&format=id:syn')
     snomed_resp = requests.get(snomed_url)
     finding_site_data = snomed_resp.json()
@@ -348,7 +348,7 @@ def get_EHR_patient():
     with open(data_dir / "patient_id.txt", "r") as f:
         patient_id = f.read().strip()
     url = f'{FHIR_SERVER_URL}/Patient/{patient_id}'
-    response = requests.get(url=url, headers=get_headers())
+    response = requests.get(url=url)
     print(response.url)
     pprint(response.json())
 
@@ -357,7 +357,7 @@ def get_EHR_condition():
     with open(data_dir / "condition_id.txt", "r") as f:
         patient_id = f.read().strip()
     url = f'{FHIR_SERVER_URL}/Condition/{patient_id}'
-    response = requests.get(url=url, headers=get_headers())
+    response = requests.get(url=url)
     print(response.url)
     pprint(response.json())
 

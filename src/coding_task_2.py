@@ -249,7 +249,7 @@ def get_EHR_condition():
     with open(data_dir / "child_condition_id.txt", "r") as f:
         patient_id = f.read().strip()
     url = f'{FHIR_SERVER_URL}/Condition/{patient_id}'
-    response = requests.get(url=url, headers=get_headers())
+    response = requests.get(url=url)
     print(response.url)
     pprint(response.json())
 
