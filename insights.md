@@ -5,6 +5,8 @@
 
 This project helped us understand how healthcare data can be handled using real-world APIs and standards. We worked with multiple systems to simulate how patient information is shared between providers.
 
+## Challenges
+
 ## What We Learned
 
 - How to use FHIR APIs to fetch and post patient data.
