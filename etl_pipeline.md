@@ -70,7 +70,7 @@ url = f'{BASE_URL}/Condition?patient={patient_resource_id}'#condition
 - Transforming the data
 
 ```python
-# Getting body site for child condition from SNOMED
+    # Getting body site for child condition from SNOMED
     snomed_url = (f'{BASE_HERMES_URL}/concepts/{ch_concept_id}/properties?expand=0&format=id:syn')
     snomed_resp = requests.get(snomed_url)
     finding_site_data = snomed_resp.json()
@@ -78,14 +78,14 @@ url = f'{BASE_URL}/Condition?patient={patient_resource_id}'#condition
     find_site_code = finding_site.split(":")[0]
     find_site_name = finding_site.split(":")[1]
 
-# Fetch severity from snomed
+    # Fetch severity from snomed
     severity_url = (f'{BASE_HERMES_URL}/search?s="moderate severity"')
     resp= requests.get(severity_url)
     severity_data= resp.json()
     severity_id= str(severity_data[0].get('conceptId'))
     severity_term= severity_data[0].get('preferredTerm')
 
-# Fetch diagnosis from snomed
+    # Fetch diagnosis from snomed
     diagnosis_url = (f'{BASE_HERMES_URL}/search?s="diagnosis"')
     resp_diag = requests.get(diagnosis_url)
     dianosis_data = resp_diag.json()
