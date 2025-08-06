@@ -1,0 +1,26 @@
+{
+  "resourceType": "Procedure",
+  "status": "completed",
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "185389009",
+        "display": "Electrocardiographic procedure"
+      }
+    ],
+    "text": "Electrocardiographic procedure"
+  },
+  "subject": {
+    "reference": "Patient/43"
+  },
+  "performedDateTime": "2024-12-01T10:30:00Z",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/procedure-observation",
+      "valueReference": {
+        "reference": "Observation/46"
+      }
+    }
+  ]
+}

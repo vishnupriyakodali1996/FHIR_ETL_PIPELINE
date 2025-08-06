@@ -2,9 +2,9 @@
   "id": "985ac83e-bf59-4bd8-80a9-a7a82fda81ee",
   "meta": {
     "versionId": "1",
-    "lastUpdated": "2025-05-03T00:49:43+00:00",
+    "lastUpdated": "2025-05-08T00:13:47+00:00",
     "profile": [
-      "http://hl7.org/fhir/StructureDefinition/Condition"
+      "http://example.org/StructureDefinition/my-condition-profile"
     ]
   },
   "resourceType": "Condition",
@@ -35,6 +35,16 @@
           "display": "Problem List Item"
         }
       ]
+    },
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "439401001",
+          "display": "Diagnosis"
+        }
+      ],
+      "text": "Diagnosis"
     }
   ],
   "code": {
@@ -47,29 +57,30 @@
     ],
     "text": "Acute viral tonsillitis"
   },
-  "subject": {
-    "reference": "Patient/985ac812-ddd2-49ce-9806-160e27d7cfa7"
-  },
   "severity": {
     "coding": [
       {
         "system": "http://snomed.info/sct",
-        "code": "24484000",
-        "display": "Severe"
+        "code": "6736007",
+        "display": "Moderate severity"
       }
-    ]
+    ],
+    "text": "Moderate severity"
   },
   "bodySite": [
     {
       "coding": [
         {
           "system": "http://snomed.info/sct",
-          "code": "49521004",
-          "display": "Left external ear structure"
+          "code": "75573002",
+          "display": "Palatine tonsillar structure"
         }
       ],
-      "text": "Left Ear"
+      "text": "Palatine tonsillar structure"
     }
   ],
-  "onsetDateTime": "2012-05-24"
+  "subject": {
+    "reference": "Patient/985ac812-ddd2-49ce-9806-160e27d7cfa7"
+  },
+  "onsetDateTime": "2025-05-07"
 }

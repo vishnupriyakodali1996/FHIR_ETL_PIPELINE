@@ -18,6 +18,7 @@ url = f'{BASE_URL}/Condition?patient={patient_resource_id}'#condition
 ```
 
 - Extracted the patient's conditions and selected one SNOMED CT condition code.
+
 ```python
     # Extract SNOMED code
     code = entry['code']['coding'][0]['code']
@@ -60,12 +61,14 @@ url = f'{BASE_URL}/Condition?patient={patient_resource_id}'#condition
 ## Task 2 – Child Concept
 
 - Reused the same patient and original SNOMED condition.
+
 ```python
     # Fetch SNOMED child
     snomed_url = f'{BASE_HERMES_URL}/search?constraint=<{code}'
     snomed_response = requests.get(snomed_url)
 ```
 - Transforming the data
+
 ```python
 # Getting body site for child condition from SNOMED
     snomed_url = (f'{BASE_HERMES_URL}/concepts/{ch_concept_id}/properties?expand=0&format=id:syn')

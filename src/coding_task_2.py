@@ -255,9 +255,9 @@ def get_EHR_condition():
 
 if __name__ == '__main__':
     print('-------------------------------------------------------------')
-    #get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #get_child(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #create_child_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
-    #post_condition("child_condition", "Condition")
-    #get_EHR_condition()
+    get_fhir_patient(resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_one_condition(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    get_child(patient_resource_id= '985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    create_child_condition_json(patient_resource_id='985ac812-ddd2-49ce-9806-160e27d7cfa7')
+    post_condition("child_condition", "Condition")
+    get_EHR_condition()
